@@ -12,12 +12,28 @@ import NProgress from 'nprogress'
 import GStore from '@/store'
 import EventService from '@/services/EventService'
 import OrganizerService from '@/services/OrganizerService.js'
+import OrganizerListView from '@/views/OrganizerListView.vue'
+import OrganizerLayout from '@/views/event/OrganizerLayoutView.vue'
+import OrganizerDetails from '@/views/event/OrganizerDetailView.vue'
+import OrganizerForm from '@/views/OrganizerForm.vue'
+import OrganizerEdit from '../views/event/OrganizerEditView.vue'
+
 const routes = [
   {
     path: '/',
     name: 'EventList',
     component: EventListView,
     props: (route) => ({ page: parseInt(route.query.page) || 1 })
+  },
+  {
+    path: '/Organizer',
+    name: 'OrganizerListView',
+    component: OrganizerListView
+  },
+  {
+    path: '/OrganizerForm',
+    name: 'OrganizerForm',
+    component: OrganizerForm
   },
   {
     path: '/about',
@@ -63,6 +79,42 @@ const routes = [
         name: 'EventEdit',
         props: true,
         component: EventEditView
+      }
+    ]
+  },
+  {
+    path: '/organizer/:id',
+    name: 'OrganizerLayout',
+    component: OrganizerLayout,
+    beforeEnter: (to) => {
+      return OrganizerService.getOrganizer(to.params.id)
+        .then((response) => {
+          GStore.organizers = response.data
+        })
+        .catch((error) => {
+          if (error.response && error.response.start == 404) {
+            return {
+              name: '404Resource',
+              parames: { resource: 'event' }
+            }
+          } else {
+            return { name: 'NetworkError' }
+          }
+        })
+    },
+    props: true,
+    children: [
+      {
+        path: '',
+        name: 'OrganizerDetails',
+        component: OrganizerDetails,
+        props: true
+      },
+      {
+        path: 'edit',
+        name: 'OrganizerEdit',
+        component: OrganizerEdit,
+        props: true
       }
     ]
   },
